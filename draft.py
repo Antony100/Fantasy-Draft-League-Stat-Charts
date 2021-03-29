@@ -13,31 +13,14 @@ class DraftData():
     def get_data(self, player_name):
         # make line fit
         player = requests.get(
-            f"https://draft.premierleague.com/api/entry/{self.player_ids[player_name]}/history"
+            f"https://draft.premierleague.com/api/entry/\
+                {self.player_ids[player_name]}/history"
         )
         player_data = player.json()
         return player_data
 
     def get_points_per_gameweek(self, src):
         return [points['points'] for points in src['history']]
-
-#     def get_gameweeks(self, src):
-#         return list(range(1, len(src) + 1))
-
-#     def get_gameweeks_points(self, player_name):
-#         data = self.get_data(player_name)
-#         points = self.get_points_per_gameweek(data)
-# #         gameweeks = self.get_gameweeks(points)
-#         return dict(enumerate(points, start=1))
-
-#     def get_gameweeks_points(self, player_name):
-#         data = self.get_data(player_name)
-#         points = self.get_points_per_gameweek(data)
-#         return {player_name: dict(enumerate(points, start=1))}
-
-#     one-liner
-#     def get_gameweeks_points(self, *players):
-#         return {player_name: dict(enumerate(self.get_points_per_gameweek(self.get_data(player_name)), start=1)) for player_name in players}
 
     def get_gameweeks_points(self, *players):
         result = dict()
@@ -85,14 +68,19 @@ class HeadToHead(DraftData):
 
     def headtohead_score(self):
         """
-        Compares the scores of each gameweek if players went head to head and returns
-        a dict of how many wins each and draws (if any).
-
+        Compares the scores of each gameweek if players went
+        head to head and returns a dict of how many wins each and draws
+        (if any).
         """
         p1_win = 0
         p2_win = 0
         draw = 0
-        for score in list(zip(self.players_scores[self.player1].values(), self.players_scores[self.player2].values())):
+        for score in list(
+            zip(
+                self.players_scores[self.player1].values(),
+                self.players_scores[self.player2].values()
+            )
+        ):
             if score[0] > score[1]:
                 p1_win += 1
             elif score[1] > score[0]:
@@ -103,9 +91,8 @@ class HeadToHead(DraftData):
 
     def plot_barchart(self):
         """
-        Plots points and gameweeks for both players as a bar chart and returns
-        bar chart with the total head to head score.
-
+        Plots points and gameweeks for both players as a bar chart and
+        returns bar chart with the total head to head score.
         """
 
         labels = list(self.players_scores[self.player1].keys())
@@ -121,7 +108,9 @@ class HeadToHead(DraftData):
             label=self.player1
         )
         rects2 = ax.bar(
-            x + width / 2, self.players_scores[self.player2].values(), width, label=self.player2)
+            x + width / 2, self.players_scores[self.player2].values(),
+            width, label=self.player2
+        )
 
         ax.set_ylabel('Points')
         ax.set_title('Head to Head By Gameweek')
@@ -130,11 +119,6 @@ class HeadToHead(DraftData):
         ax.legend()
 
         bbox_args = dict(boxstyle="round", fc="0.8")
-
-#         ax.annotate(f'{self.player1}: {self.headtohead_score()[self.player1]}\n{self.player2}: {self.headtohead_score()[self.player2]}\n draw: {self.headtohead_score()["draw"]}', xy=(1, 1), xycoords='figure fraction',
-#                      xytext=(-20, -20), textcoords='offset points',
-#                      ha="right", va="top",
-#                      bbox=bbox_args,
 
         ax.annotate(
             f'{self.player1}: {self.headtohead_score()[self.player1]}\n \
@@ -147,7 +131,10 @@ class HeadToHead(DraftData):
         )
 
         def autolabel(rects):
-            """Attach a text label above each bar in *rects*, displaying its height."""
+            """
+            Attach a text label above each bar in *rects*,
+            displaying its height.
+            """
             for rect in rects:
                 height = rect.get_height()
                 ax.annotate('{}'.format(height),
@@ -161,34 +148,37 @@ class HeadToHead(DraftData):
 
         fig.tight_layout()
 
-        plt.show()
+        # plt.show()
+        fig.savefig('demo.png', bbox_inches='tight')
 
 
 class LeagueStats(DraftData):
 
-    def __init__(self):
-        pass
+    def __init__(self, player_ids):
+        super().__init__(player_ids)
+        self.all_player_scores = self.get_all_player_points(format_type='list')
+        print(self.all_player_scores)
 
-    def get_lowest_gameweek_score(self):
-        pass
+    def calc_average(self, lst):
+        return sum(lst) // len(lst)
+
+    def get_lowest_gameweek_scores(self):
+        """ returns lowest gameweek score of all players"""
+        return {
+            player: min(self.all_player_scores[player])
+            for player in self.all_player_scores
+        }
 
     def get_highest_gameweek_score(self):
-        pass
+        """ returns highest gameweek score of all players"""
+        return {
+            player: max(self.all_player_scores[player])
+            for player in self.all_player_scores
+        }
 
-    def plot_boxplot(self):
-        pass
-
-    def plot_averages_barchart(self):
-        pass
-
-
-
-
-# h = HeadToHead(player_ids.PLAYERS, 'Manesh', 'Llukman')
-
-
-# h.show_graph()
-
-lg2 = HeadToHead(player_ids_lg2.PLAYERS_LG2, 'Antony', 'Geno')
-
-lg2.plot_barchart()
+    def get_average_gameweek_score(self):
+        """ returns average gameweek score of all players"""
+        return {
+            player: self.calc_average(self.all_player_scores[player])
+            for player in self.all_player_scores
+        }
