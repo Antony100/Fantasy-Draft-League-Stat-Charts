@@ -1,6 +1,7 @@
 \.vscode
 \player_ids.py
 \player_ids_lg2.py
+draft_league.ipynb
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
