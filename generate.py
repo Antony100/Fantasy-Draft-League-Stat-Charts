@@ -3,7 +3,7 @@ from itertools import combinations
 from config import LEAGUE_ID
 
 
-def get_head_to_head_results(players):
+def get_head_to_head_results():
     """
     Generates line and bar charts of all combinations of players going
     head to head and saves them to the results folder.

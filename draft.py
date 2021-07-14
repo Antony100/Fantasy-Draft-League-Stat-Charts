@@ -21,7 +21,12 @@ class DraftData():
     def get_api_data(self, BASE_URL=BASE_URL, url=''):
         """Makes a call to the API and returns the result as json."""
         src = requests.get(BASE_URL + url)
-        return src.json()
+        if src.status_code == 200:
+            return src.json()
+        elif src.status_code == 404:
+            raise requests.RequestException(
+                "API is not available or League ID not found"
+            )
 
     def get_player_ids(self):
         """
