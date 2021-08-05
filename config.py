@@ -1,3 +1,3 @@
 # League ID goes here
 
-LEAGUE_ID = 26040
+LEAGUE_ID = "YOUR LEAGUE ID HERE"
