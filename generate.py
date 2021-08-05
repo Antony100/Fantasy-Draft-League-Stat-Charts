@@ -10,6 +10,7 @@ def get_head_to_head_results():
     """
     draft_data = draft.DraftData(LEAGUE_ID)
 
+    # rename
     players = draft_data.get_player_ids()
 
     player_combos = tuple(combinations(players, 2))

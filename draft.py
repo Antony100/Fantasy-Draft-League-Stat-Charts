@@ -16,7 +16,11 @@ class DraftData():
         self.league_id = league_id
         self.player_ids = self.get_player_ids()
 
+# candidate for config
     BASE_URL = "https://draft.premierleague.com/api/"
+
+# werkzeug?
+# use requests.raise_for_status()
 
     def get_api_data(self, BASE_URL=BASE_URL, url=''):
         """Makes a call to the API and returns the result as json."""
@@ -56,6 +60,7 @@ class DraftData():
         """
         return [points['points'] for points in src['history']]
 
+# doing 2 things, needs to be split.
     def get_players_points(self, *players, format_type="dict"):
         """
         returns a dictionary of players and their gameweek score points.
@@ -131,6 +136,7 @@ class HeadToHead(DraftData):
         plt.ylabel('points')
         plt.legend([self.player1, self.player2])
 
+# numbers need to be explicit, add to config
         fig.set_size_inches(18.5, 10.5, forward=True)
 
         # plt.show()
@@ -221,6 +227,7 @@ class LeagueStats(DraftData):
         )
         print(self.all_player_scores)
 
+# try/except if dividing by 0
     def calc_average(self, lst):
         """
         Calculates and returns the floored average number from a list of
@@ -283,6 +290,7 @@ class LeagueStats(DraftData):
         )
         plt.close()
 
+# rename to save_boxplot
     def plot_boxplot(self):
         """
         Saves a boxplot of all the players' scores.
