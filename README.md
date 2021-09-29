@@ -5,5 +5,9 @@ if they went head to head with each other every gameweek and general gameweek sc
 
 ### Usage
 
-- in `config.py`, set `LEAGUE_ID` to the league id of the desired draft league
-- run `generate.py`
+    python generate.py -l [LEAGUE_ID]
+
+
+### Tests
+
+    pytest tests
