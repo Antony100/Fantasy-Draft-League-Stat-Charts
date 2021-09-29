@@ -5,6 +5,10 @@ from matplotlib import pyplot as plt
 
 import numpy as np
 
+CURRENT_DIR = os.getcwd()
+RESULTS_DIR_PATH = os.path.join(CURRENT_DIR, 'results')
+BASE_URL = "https://draft.premierleague.com/api/"
+
 
 class DraftData():
     """
@@ -14,19 +18,23 @@ class DraftData():
 
     def __init__(self, league_id):
         self.league_id = league_id
-        self.player_ids = self.get_player_ids()
 
-    BASE_URL = "https://draft.premierleague.com/api/"
+    @property
+    def player_ids(self):
+        try:
+            return self._player_ids
+        except AttributeError:
+            self._player_ids = self.get_player_ids()
+            return self._player_ids
 
     def get_api_data(self, BASE_URL=BASE_URL, url=''):
         """Makes a call to the API and returns the result as json."""
-        src = requests.get(BASE_URL + url)
-        if src.status_code == 200:
-            return src.json()
-        elif src.status_code == 404:
-            raise requests.RequestException(
-                "API is not available or League ID not found"
-            )
+        response = requests.get(BASE_URL + url)
+
+        response.raise_for_status()
+
+        if response.status_code == 200:
+            return response.json()
 
     def get_player_ids(self):
         """
@@ -66,7 +74,6 @@ class DraftData():
         """
         result = dict()
         for player_name in players:
-            print(player_name)
             data = self.get_player_history(player_name)
             points = self.get_points_per_gameweek(data)
             if format_type == "dict":
@@ -82,8 +89,8 @@ class HeadToHead(DraftData):
     barcharts if players went head to head.
     """
 
-    def __init__(self, player_ids, player1, player2):
-        super().__init__(player_ids)
+    def __init__(self, league_id, player1, player2):
+        super().__init__(league_id)
         self.player1 = player1
         self.player2 = player2
         self.players_scores = self.get_players_points(
@@ -135,10 +142,15 @@ class HeadToHead(DraftData):
 
         # plt.show()
 
-        plt.savefig(
-            f'{os.getcwd()}/results/{self.player1}_{self.player2}_line.jpg',
-            orientation='landscape'
-        )
+        try:
+            os.mkdir(RESULTS_DIR_PATH)
+        except FileExistsError:
+            pass
+
+        file_name = f'{self.player1}_{self.player2}_line.jpg'
+        file_path = os.path.join(RESULTS_DIR_PATH, file_name)
+
+        plt.savefig(file_path, orientation='landscape')
         plt.close()
 
     def plot_barchart(self):
@@ -214,19 +226,18 @@ class LeagueStats(DraftData):
     player in barcharts and also as a boxplot.
     """
 
-    def __init__(self, player_ids):
-        super().__init__(player_ids)
+    def __init__(self, league_id):
+        super().__init__(league_id)
         self.all_player_scores = self.get_players_points(
             *self.player_ids, format_type='list'
         )
         print(self.all_player_scores)
 
     def calc_average(self, lst):
-        """
-        Calculates and returns the floored average number from a list of
-        numbers.
-        """
-        return sum(lst) // len(lst)
+        try:
+            return sum(lst) // len(lst)
+        except ZeroDivisionError:
+            print("Cannot divide by zero")
 
     def get_gameweek_statistic(self, func):
         """
@@ -278,7 +289,7 @@ class LeagueStats(DraftData):
         fig.set_size_inches(18.5, 10.5, forward=True)
 
         plt.savefig(
-            f'{os.getcwd}/results/{title}.jpg',
+            f'{os.getcwd()}/results/{title}.jpg',
             orientation='landscape'
         )
         plt.close()
@@ -296,7 +307,7 @@ class LeagueStats(DraftData):
             labels=(list(self.all_player_scores.keys()))
         )
         plt.savefig(
-            f'{os.getcwd}/results/boxplot.jpg', orientation='landscape'
+            f'{os.getcwd()}/results/boxplot.jpg', orientation='landscape'
         )
         plt.close()
 
